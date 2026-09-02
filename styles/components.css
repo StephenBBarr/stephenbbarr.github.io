@@ -1,0 +1,162 @@
+.stack {
+  display: grid;
+  gap: 1lh;
+}
+
+.stack--compact {
+  gap: 0.25lh;
+}
+
+.stack--spacious {
+  gap: 2lh;
+}
+
+.prose,
+.document {
+  color: var(--copy);
+}
+
+.meta,
+.message {
+  color: var(--muted);
+}
+
+.message .text-button {
+  margin-inline-start: 1ch;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25lh 1ch;
+}
+
+.row--spread {
+  justify-content: space-between;
+  gap: 1lh 2ch;
+}
+
+.document {
+  width: min(100%, 110ch);
+}
+
+.document-header {
+  padding-block: 0.75lh;
+  border-block: 1px solid var(--line);
+}
+
+.document-title {
+  font-size: 1.5em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.document-footer {
+  padding-top: 0.75lh;
+  border-top: 1px solid var(--line);
+}
+
+.notice > strong {
+  color: var(--command);
+}
+
+.notice a {
+  font-weight: 700;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: auto minmax(2ch, 1fr);
+  gap: 1ch;
+  align-items: center;
+}
+
+.section-heading::after {
+  border-top: 1px dashed var(--line);
+  content: "";
+}
+
+.entry,
+.bullet-list {
+  gap: 0.75lh;
+}
+
+.entry {
+  padding-inline-start: 2ch;
+  border-inline-start: 1px solid var(--line);
+}
+
+.entry + .entry {
+  margin-top: 0.5lh;
+}
+
+.entry-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 3ch;
+  align-items: start;
+}
+
+.entry-title::before {
+  color: var(--accent);
+  content: "> ";
+}
+
+.entry-date {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bullet-list {
+  padding-inline-start: 2ch;
+  list-style-type: "- ";
+}
+
+.bullet-list li::marker {
+  color: var(--accent);
+}
+
+/* Only the identity and education columns depend on the CV's structure. */
+.cv-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 4ch;
+  align-items: end;
+  color: var(--ink);
+}
+
+.cv-identity address {
+  display: grid;
+  justify-items: end;
+  text-align: right;
+}
+
+.cv-education > div {
+  display: grid;
+  grid-template-columns: 26ch minmax(0, 1fr) max-content;
+  gap: 2ch;
+}
+
+@media (max-width: 48rem) {
+  .cv-identity,
+  .entry-header,
+  .cv-education > div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .cv-identity address {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .entry-date {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .entry {
+    padding-inline-start: 1ch;
+  }
+}

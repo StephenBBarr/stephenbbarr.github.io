@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-GB" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="The portfolio of Stephen Barr, Systems Architect and Engineering Lead."
+    />
+    <meta name="theme-color" content="#1c1f1c" />
+    <title>Stephen Barr — Systems Architect</title>
+    <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/terminal.css" />
+    <script src="scripts/content.js" defer></script>
+    <script src="scripts/components.js" defer></script>
+    <script src="scripts/config.js" defer></script>
+    <script src="scripts/gemtext.js" defer></script>
+    <script src="scripts/blog.js" defer></script>
+    <script src="scripts/commands.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main aria-labelledby="page-title">
+      <section class="prose">
+        <h1 id="page-title">
+          Welcome to the portfolio of <strong>Stephen Barr</strong>.
+        </h1>
+        <p>
+          Stephen is a <strong>Systems Architect</strong> and
+          <strong>Engineering Lead</strong>.
+        </p>
+        <p>
+          He architects systems, builds software and leads engineering teams.
+        </p>
+        <p>
+          His work includes secure public-service platforms supporting services
+          delivered to hundreds of thousands of people.
+        </p>
+        <p>Type <code>help</code> to find out more.</p>
+        <p>Not sure how this works? Type <code>confused</code>.</p>
+      </section>
+
+      <div
+        id="terminal-log"
+        class="terminal-log stack"
+        role="log"
+        aria-label="Terminal history"
+        aria-live="polite"
+        aria-relevant="additions"
+      ></div>
+
+      <form id="terminal-form" class="command-line">
+        <label for="terminal-command">
+          <span class="command-prompt-full" aria-hidden="true"
+            >stephen@portfolio:~/portfolio$</span
+          >
+          <span class="command-prompt-compact" aria-hidden="true">~$</span>
+          <span class="visually-hidden">Enter a portfolio command</span>
+        </label>
+        <input
+          id="terminal-command"
+          name="command"
+          type="text"
+          autocomplete="off"
+          autocapitalize="none"
+          enterkeyhint="send"
+          spellcheck="false"
+          aria-describedby="command-instructions"
+        />
+        <button type="submit" hidden>[run]</button>
+      </form>
+
+      <p id="command-instructions" class="visually-hidden">
+        Type help to list the available portfolio options. Use the up and down
+        arrow keys to browse recent commands.
+      </p>
+
+      <noscript
+        >This prototype requires JavaScript to accept commands.</noscript
+      >
+    </main>
+  </body>
+</html>
