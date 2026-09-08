@@ -217,3 +217,35 @@ test("each page loads only its enhancements and one stylesheet", () => {
     assert.equal(document.querySelectorAll('link[rel="stylesheet"]').length, 1, file);
   }
 });
+
+test("published pages restrict active content and connect only to the public bridge", () => {
+  for (const [file, html] of buildPages()) {
+    const { document } = parseHTML(html);
+    const policy = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+    assert(policy, file);
+    const directives = Object.fromEntries(policy.content.split(";").map((part) => {
+      const [name, ...sources] = part.trim().split(/\s+/);
+      return [name, sources];
+    }));
+    assert.deepEqual(directives["default-src"], ["'none'"]);
+    for (const name of ["script-src", "style-src", "img-src"]) assert.deepEqual(directives[name], ["'self'"]);
+    for (const name of ["base-uri", "object-src", "form-action", "frame-src"]) assert.deepEqual(directives[name], ["'none'"]);
+    assert.deepEqual(directives["connect-src"], [new URL(production.bridgeBase).origin]);
+    assert(!policy.content.includes("unsafe-inline") && !policy.content.includes("unsafe-eval"));
+    assert(!policy.content.includes("127.0.0.1") && !policy.content.includes("localhost"));
+    assert(html.indexOf('http-equiv="Content-Security-Policy"') < html.indexOf("<script"));
+    assert.equal(document.querySelectorAll("script:not([src]),[style],[onclick],[onload]").length, 0);
+  }
+});
+
+test("local preview gets a separate policy without changing the production build", () => {
+  const before = [...buildFiles()];
+  for (const [file, html] of distributionFiles({ localPreview: true })) {
+    if (!file.endsWith(".html")) continue;
+    const { document } = parseHTML(html);
+    const policy = document.querySelector('meta[http-equiv="Content-Security-Policy"]').content;
+    assert(policy.includes("connect-src http://127.0.0.1:5080;"));
+    assert(!policy.includes("bridge.stoathoughts.com"));
+  }
+  assert.deepEqual([...buildFiles()], before);
+});

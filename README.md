@@ -11,9 +11,12 @@ a remembered dark option. About and CV offer optional read-aloud controls.
 npm start
 ```
 
-Open http://127.0.0.1:8000/. This builds the HTML and serves it with Python 3.
+Open http://127.0.0.1:8000/. This builds a local preview in `dist/` and serves it with Python 3.
 Node.js and Python 3 are required. Building and serving need no npm dependencies.
-Stop the server with Ctrl+C. Rebuild after editing source files, then refresh.
+Stop the server with Ctrl+C. Restart it after editing source files, then refresh.
+The local preview permits requests only to the local bridge. Published HTML
+permits requests only to the public bridge; local preview settings never replace
+the generated root pages. Run `npm run build` before publishing source changes.
 
 To enable the local blog, start Docker Desktop and run this in `../gemini-lab`:
 
@@ -85,8 +88,8 @@ to local services. Server operations are documented in
 
 ## Publish to GitHub Pages
 
-See [the publishing review](PUBLISHING-REVIEW.md) for checked behavior and the
-remaining public-hosting dependency.
+See [the publishing review](PUBLISHING-REVIEW.md) for the launch and security
+checks, including their remaining limits.
 
 The live site is `https://stephenbbarr.github.io/`. Its existing publication
 history uses the `main` branch. The root `.nojekyll` file tells GitHub to serve
@@ -120,12 +123,29 @@ checks the exact allowed origins and response headers, and rejects CORS access
 for an unrelated site. It then builds `dist/` containing only public pages and
 assets. Disabled public settings, broken posts or failed public checks stop the
 command. A local blog success cannot satisfy this release check.
+Gemtext examples inside fenced blocks are ignored when identifying published
+posts, just as they are in the browser.
 
 For an offline preview, use `npm run build:dist`; this does not establish public
 readiness. `dist/` is ignored by Git and rebuilt from an explicit file list, so
 test files, documentation, Node dependencies and build sources cannot enter it.
 The existing branch-based GitHub Pages setup serves the reviewed root files;
 the distribution is also available for hosts that accept a static directory.
+
+Every generated page has a Content Security Policy before its scripts. It
+permits scripts, styles and images from this site and browser requests to the
+configured bridge. Inline scripts, evaluated code, embedded documents, forms
+and changes to the page's base address are blocked. This supplements the
+Gemtext renderer's text-only insertion and link validation. GitHub Pages does
+not provide custom response headers, so the policy is carried in the HTML;
+directives unsupported in a meta policy are not presented as protection.
+
+The `Portfolio checks` workflow runs tests, generated-file verification,
+dependency auditing and a distribution build on main and pull requests. Actions
+are pinned to verified commit hashes, the job token is read-only, and install
+scripts are disabled. Monthly Dependabot reviews cover npm and pinned Actions;
+security-update pull requests are separately enabled. Updates require review
+and do not automatically deploy themselves.
 
 Review the pending portfolio changes, then commit the source, generated pages,
 assets and `.nojekyll` together and push `main` to `origin`. Git authentication

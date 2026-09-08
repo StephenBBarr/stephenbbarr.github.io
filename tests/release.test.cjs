@@ -69,3 +69,19 @@ test("CORS permission for an unrelated site blocks the release", async () => {
   const { fetcher } = fixture((r, url, options) => r.headers.set("access-control-allow-origin", options.headers.Origin));
   await assert.rejects(checkRelease({ settings, fetcher }), /unapproved browser origin/);
 });
+
+test("fenced examples are not treated as published posts during release checks", async () => {
+  const { fetcher, calls } = fixture((r, url) => {
+    if (url.pathname === "/blog/index") r.body = index + "```Example\n=> posts/example.gmi 2026-09-08 Example\n```\n";
+    if (url.pathname === "/blog/posts/example") r.status = 404;
+  });
+  assert.equal((await checkRelease({ settings, fetcher })).posts, 2);
+  assert(!calls.some(({ url }) => url.endsWith("/example")));
+});
+
+test("a fenced-only index cannot satisfy the published-post requirement", async () => {
+  const { fetcher } = fixture((r, url) => {
+    if (url.pathname === "/blog/index") r.body = "# Blog\n```Example\n=> posts/example.gmi 2026-09-08 Example\n```\n";
+  });
+  await assert.rejects(checkRelease({ settings, fetcher }), /no dated posts/);
+});

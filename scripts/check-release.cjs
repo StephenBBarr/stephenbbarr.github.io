@@ -38,7 +38,13 @@ async function checkRelease({ settings = configuration.profiles, fetcher = fetch
 
   const index = await read("blog/index");
   const slugs = new Set();
+  let fenced = false;
   for (const line of index.split(/\r?\n/)) {
+    if (line.startsWith("```")) {
+      fenced = !fenced;
+      continue;
+    }
+    if (fenced) continue;
     const entry = /^=>\s*(\S+)\s+(\d{4}-\d{2}-\d{2})\s+(\S.*)$/.exec(line);
     if (!entry) continue;
     const [, target, date] = entry;

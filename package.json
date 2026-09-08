@@ -2,7 +2,7 @@
   "name": "stephen-barr-portfolio",
   "private": true,
   "scripts": {
-    "start": "npm run build && python3 -m http.server 8000 --bind 127.0.0.1",
+    "start": "node scripts/build.cjs --dist --local && python3 -m http.server 8000 --bind 127.0.0.1 --directory dist",
     "build": "node scripts/build.cjs",
     "build:dist": "node scripts/build.cjs --dist",
     "check:generated": "node scripts/build.cjs --check",

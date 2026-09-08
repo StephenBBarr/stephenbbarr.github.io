@@ -22,7 +22,14 @@ const descriptions = {
   "not-found": "This page could not be found. Return to Stephen Barr's portfolio.",
 };
 
-function buildPages() {
+function contentSecurityPolicy({ localPreview = false } = {}) {
+  const origin = localPreview ? "http://127.0.0.1:8000" : content.siteOrigin;
+  const configuration = blogConfiguration.resolve(origin);
+  const connect = configuration.ready ? new URL(configuration.bridgeBase).origin : "'none'";
+  return `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src ${connect}; base-uri 'none'; object-src 'none'; form-action 'none'; frame-src 'none'`;
+}
+
+function buildPages(options = {}) {
   const config = blogConfiguration.resolve(content.siteOrigin);
   const pages = new Map();
   for (const { id: section, label, href } of sections) {
@@ -42,6 +49,7 @@ function buildPages() {
 <html lang="en-GB" data-theme="light" data-page="${section}">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="${escape(contentSecurityPolicy(options))}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escape(descriptions[section])}">
   ${section === "not-found" ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${escape(canonical)}">`}
@@ -79,8 +87,8 @@ function buildPages() {
   return pages;
 }
 
-function buildFiles() {
-  const files = buildPages();
+function buildFiles(options = {}) {
+  const files = buildPages(options);
   const production = blogConfiguration.resolve(content.siteOrigin);
   const urls = sections.filter(({ id }) => id !== "not-found" && (id !== "blog" || production.ready))
     .map(({ href }) => `  <url><loc>${escape(new URL(href, content.siteOrigin).href)}</loc></url>`).join("\n");
@@ -90,8 +98,8 @@ function buildFiles() {
   return files;
 }
 
-function distributionFiles() {
-  const files = buildFiles();
+function distributionFiles(options = {}) {
+  const files = buildFiles(options);
   for (const file of ["favicon.svg", "styles/site.css", "assets/stephen-barr.jpg", "assets/Stephen-Barr-CV.pdf",
     ...["theme", "config", "actions", "gemtext", "blog", "site"].map((name) => `scripts/${name}.js`)]) {
     files.set(file, fs.readFileSync(path.join(root, file)));
@@ -99,11 +107,12 @@ function distributionFiles() {
   return files;
 }
 
-function run({ check = false, dist = false } = {}) {
+function run({ check = false, dist = false, localPreview = false } = {}) {
+  if (localPreview && (!dist || check)) throw new Error("A local preview must use --dist and cannot replace or validate published root files.");
   const destination = dist ? path.join(root, "dist") : root;
   if (dist) fs.rmSync(destination, { recursive: true, force: true });
   let differs = false;
-  for (const [name, html] of dist ? distributionFiles() : buildFiles()) {
+  for (const [name, html] of dist ? distributionFiles({ localPreview }) : buildFiles()) {
     const file = path.join(destination, name);
     if (check) {
       if (!fs.existsSync(file) || read(name) !== html) {
@@ -119,5 +128,5 @@ function run({ check = false, dist = false } = {}) {
   else console.log(check ? "Generated files match their source." : `Built ${sections.length} portfolio pages${dist ? " and public assets in dist/" : ""}.`);
 }
 
-if (require.main === module) run({ check: process.argv.includes("--check"), dist: process.argv.includes("--dist") });
-module.exports = { buildPages, buildFiles, distributionFiles };
+if (require.main === module) run({ check: process.argv.includes("--check"), dist: process.argv.includes("--dist"), localPreview: process.argv.includes("--local") });
+module.exports = { buildPages, buildFiles, distributionFiles, contentSecurityPolicy };
