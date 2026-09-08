@@ -147,11 +147,14 @@ scripts are disabled. Monthly Dependabot reviews cover npm and pinned Actions;
 security-update pull requests are separately enabled. Updates require review
 and do not automatically deploy themselves.
 
-Review the pending portfolio changes, then commit the source, generated pages,
-assets and `.nojekyll` together and push `main` to `origin`. Git authentication
-on this Mac passed a push dry run on 8 September 2026. No new GitHub tool is
-needed for that step. Wait for the repository's **Actions** page to show a
-successful **pages build and deployment** run for the new commit.
+Work on a separate branch. Review and commit the source, generated pages,
+assets and `.nojekyll` together, push that branch to `origin`, and open a pull
+request into `main`. Wait for **Portfolio checks** to pass, then merge the
+reviewed change. The branch protection permits the sole maintainer to merge
+without another person's approval, while requiring checks and resolved review
+conversations; direct unchecked pushes and force pushes are blocked. Wait for
+the repository's **Actions** page to show a successful **pages build and
+deployment** run for the resulting main commit.
 
 If publication settings need correcting, open the repository's **Settings →
 Pages** and choose **Deploy from a branch**, **main**, **/(root)**, then **Save**.

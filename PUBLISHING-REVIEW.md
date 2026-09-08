@@ -5,7 +5,7 @@ profile uses `https://bridge.stoathoughts.com/` and
 `gemini://gemini.stoathoughts.com/blog/`. GitHub Pages serves the `main` branch
 root at `https://stephenbbarr.github.io/`, with HTTPS enforced.
 
-## Security changes prepared after launch
+## Security changes after launch
 
 - Added a restrictive Content Security Policy to every generated page. Public
   pages allow browser requests only to the public bridge. The local preview is
@@ -36,10 +36,12 @@ root at `https://stephenbbarr.github.io/`, with HTTPS enforced.
 | Earlier launch checks | Public index and both articles, direct article reload, HTTPS, CV download and restricted server ports passed at launch. |
 | Earlier accessibility checks | 24 axe-core scans passed across six routes/states, two appearances and desktop/narrow enlarged-text layouts. See the accessibility review for scope. |
 
-The CSP and new workflow changes remain pending publication until their commit
-is pushed and GitHub finishes deployment. The first workflow run must pass
-before its check is made mandatory on `main`. Recheck live pages and the blog
-after deployment; local tests do not substitute for that step.
+The first `Portfolio checks` workflow passed on GitHub. For every subsequent
+update, wait for both the checks and Pages deployment to finish successfully.
+The publishing protection requires the named GitHub Actions check on `main`
+and a pull request, with zero required approvals so the sole maintainer can
+merge their own reviewed change. Recheck live pages and the blog after
+deployment; local tests do not substitute for that step.
 
 ## Publishing and remaining limits
 
