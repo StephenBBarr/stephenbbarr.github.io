@@ -346,19 +346,21 @@ test("a timed-out request aborts and displays a retry message", async () => {
   assert.match(output.textContent, /timed out.*Try again/);
 });
 
-test("only the exact local origin activates the local profile", async () => {
+test("default settings allow only the exact local and public portfolio origins", async () => {
   const configuration = createApp().portfolio.blogConfiguration;
   assert.equal(configuration.resolve("http://127.0.0.1:8000").profile, "local");
-  for (const origin of ["http://localhost:8000", "http://127.0.0.1:9000", "null", "https://stephenbbarr.github.io", "https://unlisted.example.test"]) {
+  for (const origin of ["http://localhost:8000", "http://127.0.0.1:9000", "null", "https://unlisted.example.test"]) {
     let count = 0;
     const output = createApp({ origin, fetch: async () => { count++; return response(index); } }).showIndex();
     await drain();
     assert.match(output.textContent, /not been published yet/);
     assert.equal(count, 0);
   }
-  assert.equal(configuration.profiles.production.enabled, false);
-  assert.equal(configuration.profiles.production.bridgeBase, "");
-  assert.equal(configuration.profiles.production.capsuleIndex, "");
+  const production = configuration.resolve("https://stephenbbarr.github.io");
+  assert.equal(production.ready, true);
+  assert.equal(production.profile, "production");
+  assert.equal(production.bridgeBase, "https://bridge.stoathoughts.com/");
+  assert.equal(production.capsuleIndex, "gemini://gemini.stoathoughts.com/blog/");
 });
 
 test("production routes only to HTTPS and resolves absolute capsule links", async () => {
@@ -574,7 +576,10 @@ test("detached post results cannot alter output or announce a new reading locati
 });
 
 test("unpublished blog and missing posts give a readable page with one title and useful links", async () => {
-  const app = createApp({ origin: "https://stephenbbarr.github.io" });
+  const app = createApp({
+    origin: "https://stephenbbarr.github.io",
+    settings: productionSettings({ enabled: false }),
+  });
   const output = attach(app, app.portfolio.blog.showIndex());
   await drain();
   assert.equal(app.configuration.ready, false);

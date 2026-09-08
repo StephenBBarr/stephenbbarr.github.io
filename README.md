@@ -49,14 +49,12 @@ templates run only during the build. Blog scripts load only on Blog; speech
 loads only on About and CV. All pages use one stylesheet. About, CV,
 photo, PDF, navigation and contact links work without JavaScript.
 
-The previous command interface is preserved at
-`../archived/command-view-2026-09-05/`. The current build does not read it.
-
 ## Blog
 
 Posts live in the Gemini capsule. The portfolio requests plain text from the
-bridge at `http://127.0.0.1:5080/`, which reads the capsule in Docker. The web
-site does not maintain another copy of the posts.
+public bridge at `https://bridge.stoathoughts.com/`, which reads the capsule at
+`gemini://gemini.stoathoughts.com/`. Local development uses
+`http://127.0.0.1:5080/`. The web site does not maintain another copy of the posts.
 
 - `/blog/` requests `/blog/index` and shows the capsule's index with dated links.
 - `/blog/?post=post-name` requests `/blog/posts/post-name` directly.
@@ -79,12 +77,11 @@ Use real YYYY-MM-DD dates. Post names use lowercase letters, numbers and single
 hyphens, up to 80 characters. Updating mounted content takes effect on refresh;
 it does not require rebuilding the portfolio or bridge.
 
-Public blog hosting is still unconfigured. The production profile in
-`scripts/config.js` has `enabled: false` and blank service addresses. Public
-navigation hides Blog, and a direct visit explains it has not been published.
-Follow `../gemini-lab/docs/deployment.md` to set up and verify public services,
-then configure the HTTPS bridge, Gemini capsule and permitted portfolio origin,
-enable the profile, and rebuild. Public pages cannot fall back to local services.
+The production profile in `scripts/config.js` is enabled for
+`https://stephenbbarr.github.io`. The public capsule and HTTPS bridge were
+verified on 8 September 2026 before enabling it. Public pages cannot fall back
+to local services. Server operations are documented in
+`../gemini-lab/docs/one-hour-launch.md` and `../gemini-lab/docs/server-record.md`.
 
 ## Publish to GitHub Pages
 
@@ -183,7 +180,7 @@ The downloadable CV uses tagged headings, lists and a link, document language,
 bookmarks, structural reading/tab order and embedded fonts. Its 11pt body text
 spans two pages. The HTML CV remains available. To regenerate the PDF, run
 `../scripts/build_public_cv_pdf.py` with Python and the `reportlab`, `pypdf` and
-`pdfplumber` packages. It validates text and tag order, then updates both
-`../output/pdf/stephen-barr-public-cv.pdf` and `assets/Stephen-Barr-CV.pdf`.
+`pdfplumber` packages. It validates text and tag order, then updates
+`assets/Stephen-Barr-CV.pdf` directly.
 Render and visually check both pages after changes. Tagged output alone is not
 proof of PDF/UA conformance or successful assistive-technology use.

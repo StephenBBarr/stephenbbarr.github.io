@@ -10,13 +10,13 @@
       capsuleIndex: "gemini://localhost/blog/",
     }),
     production: Object.freeze({
-      // Enable only after the public bridge and capsule have been verified.
-      enabled: false,
+      // Public bridge and capsule verified for the Stoathoughts deployment.
+      enabled: true,
       portfolioOrigins: Object.freeze([
         "https://stephenbbarr.github.io",
       ]),
-      bridgeBase: "",
-      capsuleIndex: "",
+      bridgeBase: "https://bridge.stoathoughts.com/",
+      capsuleIndex: "gemini://gemini.stoathoughts.com/blog/",
     }),
   });
 
