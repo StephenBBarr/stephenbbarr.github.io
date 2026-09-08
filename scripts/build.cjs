@@ -16,9 +16,9 @@ const sections = [...content.navigation,
 const descriptions = {
   about: "Stephen Barr, a software architect and engineering lead in Northern Ireland, building public-service platforms with C#, .NET and Azure.",
   cv: "Stephen Barr's abridged CV: software architecture, engineering leadership, selected projects and experience. Includes a downloadable PDF.",
-  blog: "Stephen Barr's writing about software engineering, architecture and things he is learning, published from his Gemini capsule.",
+  blog: "Stephen Barr's writing about software and things he is learning.",
   contact: "Contact Stephen Barr, a software architect and engineering lead based in Northern Ireland, through LinkedIn.",
-  accessibility: "How to use Stephen Barr's portfolio with assistive technology, its accessibility features, known limitations and how to report a problem.",
+  accessibility: "Help using Stephen Barr's portfolio and how to report a problem.",
   "not-found": "This page could not be found. Return to Stephen Barr's portfolio.",
 };
 

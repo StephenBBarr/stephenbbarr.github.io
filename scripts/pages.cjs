@@ -43,29 +43,25 @@ function renderPage(section, content = defaultContent) {
     case "accessibility":
       return `<article class="stack stack--spacious">
         <header class="stack"><h1>Accessibility</h1>
-          <p>I want everyone to be able to read this portfolio and blog. I am working towards the <a href="https://www.w3.org/TR/WCAG22/">Web Content Accessibility Guidelines (WCAG) 2.2 at Level AA</a>, with additional improvements to contrast, focus visibility and control sizes.</p>
+          <p>I want this site to be easy to read and use.</p>
         </header>
         <section class="stack" aria-labelledby="using-the-site"><h2 id="using-the-site">Using this site</h2>
           <ul class="bullet-list stack">
-            <li>Use a keyboard to follow links and operate controls. The first link lets you skip straight to the content.</li>
-            <li>Enlarge text with your browser's zoom or text settings. The layout adapts to narrow screens and increased text spacing.</li>
-            <li>Choose light or dark appearance using the control at the bottom of each page. Your choice is remembered when your browser permits it.</li>
-            <li>Use your screen reader to navigate headings, links and lists. Optional read-aloud controls are available on About and CV in supporting browsers; the CV control reads a summary.</li>
-            <li>Read the <a href="/cv/">CV as a web page</a> or open its downloadable PDF. The PDF has larger text, tagged headings and lists, a reading order and bookmarks.</li>
+            <li>Use your keyboard to follow links. The first link skips to the page content.</li>
+            <li>Enlarge the text using your browser settings.</li>
+            <li>Switch between light and dark appearance at the bottom of any page.</li>
+            <li>Listen to About or a CV summary using the read-aloud button, if your browser supports it.</li>
+            <li>Read the <a href="/cv/">CV online</a> or download it as a PDF.</li>
           </ul>
         </section>
-        <section class="stack" aria-labelledby="known-limitations"><h2 id="known-limitations">Known limitations</h2>
-          <p>A complete review with screen readers and disabled users is still needed, including the CV PDF. I am not yet claiming full WCAG conformance.</p>
-          <p>Reading the blog here needs JavaScript. Other pages remain readable without it. Blog requests can fail; an error message and retry control remain available.</p>
-          <p>LinkedIn and other external sites have their own accessibility arrangements.</p>
+        <section class="stack" aria-labelledby="known-limitations"><h2 id="known-limitations">Known limits</h2>
+          <p>The site and CV PDF still need a full review with screen readers and disabled users.</p>
+          <p>The blog needs JavaScript enabled in your browser. Other pages can be read without it.</p>
         </section>
-        <section class="stack" aria-labelledby="report-a-problem"><h2 id="report-a-problem">Report an accessibility problem</h2>
-          <p>Please <a href="/contact/">contact me through LinkedIn</a> if something prevents you from using the site or you need the information in another format. Include the page address, what you were trying to do, and any browser or assistive technology details you are comfortable sharing.</p>
+        <section class="stack" aria-labelledby="report-a-problem"><h2 id="report-a-problem">Need help?</h2>
+          <p>Please <a href="/contact/">contact me through LinkedIn</a> if you have trouble using the site or need another format. Tell me which page you were using and what went wrong.</p>
         </section>
-        <section class="stack" aria-labelledby="review"><h2 id="review">Review</h2>
-          <p>Last reviewed: <time datetime="2026-09-08">8 September 2026</time>.</p>
-          <p>Checks cover page structure, colour contrast, keyboard focus, text enlargement, mobile layout, speech controls and blog loading and recovery. Automated checks support this work; they do not replace testing with people who use assistive technology.</p>
-        </section>
+        <p class="meta">Last updated: <time datetime="2026-09-08">8 September 2026</time>.</p>
       </article>`;
     case "about":
       return `<section class="stack" aria-label="${escape(about.ariaLabel)}">
