@@ -13,6 +13,8 @@ const sections = [...content.navigation,
   { id: "accessibility", label: "Accessibility", href: "/accessibility/" },
   { id: "not-found", label: "Page not found", href: "/404.html" },
 ];
+// Keep the test blog out of search until its posts are ready for publication.
+const excludedFromSearch = new Set(["blog", "not-found"]);
 const descriptions = {
   about: "Stephen Barr, a software architect and engineering lead in Northern Ireland, building public-service platforms with C#, .NET and Azure.",
   cv: "Stephen Barr's abridged CV: software architecture, engineering leadership, selected projects and experience. Includes a downloadable PDF.",
@@ -35,6 +37,10 @@ function buildPages(options = {}) {
   for (const { id: section, label, href } of sections) {
     const title = `${label} — Stephen Barr`;
     const canonical = new URL(href, content.siteOrigin).href;
+    const searchMetadata = [
+      excludedFromSearch.has(section) ? '<meta name="robots" content="noindex">' : null,
+      section === "not-found" ? null : `<link rel="canonical" href="${escape(canonical)}">`,
+    ].filter(Boolean).join("\n  ");
     const scripts = ["config"];
     if (section === "about" || section === "cv") scripts.push("actions");
     if (section === "blog") scripts.push("gemtext", "blog");
@@ -52,7 +58,7 @@ function buildPages(options = {}) {
   <meta http-equiv="Content-Security-Policy" content="${escape(contentSecurityPolicy(options))}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escape(descriptions[section])}">
-  ${section === "not-found" ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${escape(canonical)}">`}
+  ${searchMetadata}
   <meta property="og:title" content="${escape(title)}">
   <meta property="og:description" content="${escape(descriptions[section])}">
   <meta property="og:type" content="website">
@@ -89,8 +95,7 @@ function buildPages(options = {}) {
 
 function buildFiles(options = {}) {
   const files = buildPages(options);
-  const production = blogConfiguration.resolve(content.siteOrigin);
-  const urls = sections.filter(({ id }) => id !== "not-found" && (id !== "blog" || production.ready))
+  const urls = sections.filter(({ id }) => !excludedFromSearch.has(id))
     .map(({ href }) => `  <url><loc>${escape(new URL(href, content.siteOrigin).href)}</loc></url>`).join("\n");
   files.set("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`);
   files.set("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${content.siteOrigin}/sitemap.xml\n`);

@@ -172,13 +172,15 @@ test("generation is repeatable and all published HTML matches its current source
   }
 });
 
-test("publishing metadata identifies pages and keeps missing pages out of search", () => {
+test("publishing metadata keeps the test blog and missing pages out of search", () => {
   const descriptions = new Set();
   for (const [file, href, section] of routes) {
     const document = documentFor(file);
     const description = document.querySelector('meta[name="description"]').content;
     assert(description.length > 30);
     descriptions.add(description);
+    assert.equal(document.querySelector('meta[name="robots"]')?.content ?? null,
+      ["blog", "not-found"].includes(section) ? "noindex" : null, file);
     if (section === "not-found") {
       assert.equal(document.querySelector('meta[name="robots"]').content, "noindex");
       assert.equal(document.querySelector('link[rel="canonical"]'), null);
@@ -191,7 +193,8 @@ test("publishing metadata identifies pages and keeps missing pages out of search
   const files = buildFiles();
   assert(files.get("robots.txt").includes(`${content.siteOrigin}/sitemap.xml`));
   assert(!files.get("sitemap.xml").includes("404.html"));
-  assert.equal(files.get("sitemap.xml").includes(`${content.siteOrigin}/blog/`), production.ready);
+  assert(!files.get("sitemap.xml").includes(`${content.siteOrigin}/blog/`));
+  assert(!files.get("robots.txt").includes("Disallow:"), "Crawlers must be able to read the noindex instruction");
   assert(files.has(".nojekyll"));
 });
 
