@@ -102,7 +102,7 @@ test("Contact offers the existing public route without a form", () => {
   assert(page.textContent.includes(content.person.location));
   const link = page.querySelector("a");
   assert.equal(link.getAttribute("href"), content.person.linkedin.href);
-  assert.match(link.textContent, /opens in a new tab/);
+  assert.equal(link.textContent, content.person.linkedin.label);
   assert.equal(page.querySelector("form"), null);
 });
 

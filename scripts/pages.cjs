@@ -17,7 +17,7 @@ function renderPage(section, content = defaultContent) {
   const heading = `<h1 class="visually-hidden">${escape(label)}</h1>`;
   const paragraph = (text, className = "") => `<p class="${className}">${escape(text)}</p>`;
   const linkedIn = (label = person.linkedin.label) =>
-    `<a href="${escape(person.linkedin.href)}" target="_blank" rel="noopener noreferrer" aria-label="${escape(label.includes("opens in a new tab") ? label : `${label} (opens in a new tab)`)}">${escape(label)}</a>`;
+    `<a href="${escape(person.linkedin.href)}" target="_blank" rel="noopener noreferrer">${escape(label)}</a>`;
   const pdfLink = `<a class="action-link cv-download" href="${escape(cv.pdf.href)}" download>${escape(cv.pdf.downloadLabel)}</a>`;
   const achievements = (items) => `<ul class="bullet-list stack">${items.map(({ lead, body }) =>
     `<li><strong>${escape(lead)}</strong> ${escape(body)}</li>`).join("")}</ul>`;
@@ -78,7 +78,7 @@ function renderPage(section, content = defaultContent) {
       return `<section class="stack" aria-label="${escape(content.contact.ariaLabel)}">
         ${heading}<address class="stack">
           <p><strong>${escape(content.contact.labels.location)}:</strong> ${escape(person.location)}</p>
-          <p><strong>${escape(content.contact.labels.linkedin)}:</strong> ${linkedIn(`${person.linkedin.label} (opens in a new tab)`)}</p>
+          <p><strong>${escape(content.contact.labels.linkedin)}:</strong> ${linkedIn()}</p>
         </address>
       </section>`;
     case "cv":
