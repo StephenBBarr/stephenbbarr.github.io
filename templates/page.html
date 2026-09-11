@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB" data-theme="light" data-page="{{section}}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="{{securityPolicy}}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{description}}">
+  {{indexingMetadata}}
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:type" content="{{pageType}}">
+  <meta property="og:url" content="{{canonicalUrl}}">
+  <meta property="og:locale" content="en_GB">
+  <meta name="theme-color" content="#f7f5ef">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>{{title}}</title>
+  <link rel="icon" href="{{faviconUrl}}" type="image/svg+xml" sizes="any">
+  <script src="{{themeScriptUrl}}"></script>
+  <link rel="stylesheet" href="{{stylesheetUrl}}">
+  {{pageScripts}}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="site-shell">
+    <header class="site-header"><a class="site-name" href="/">{{siteName}}</a></header>
+    <nav class="site-nav" aria-label="Portfolio sections">
+      {{navigationLinks}}
+    </nav>
+    <main id="main-content" tabindex="-1">{{mainContent}}</main>
+    <footer class="site-footer">
+      <button id="theme-toggle" class="text-button" type="button" hidden>Dark appearance</button>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<div class="blog-content stack">
+  <a class="blog-back" href="/blog/">Back to blog</a>
+  <article id="blog-post" class="blog-post" data-post-slug="{{slug}}" data-post-url="{{postUrl}}" data-capsule-index="{{capsuleIndex}}">
+    <h1>{{title}}</h1>
+    <time class="meta blog-date" datetime="{{date}}">{{formattedDate}}</time>
+    <div id="blog-body" class="blog-post"></div>
+  </article>
+  <p id="blog-status" role="status" aria-live="polite"></p>
+  <button id="blog-retry" class="text-button" type="button" hidden>Try again</button>
+  <noscript>
+    <p>JavaScript is needed to load this post here. You can also <a href="{{capsuleUrl}}">read it in a Gemini browser</a>.</p>
+  </noscript>
+</div>
