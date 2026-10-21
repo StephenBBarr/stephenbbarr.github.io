@@ -116,7 +116,7 @@ test("CV preserves all public facts with a useful PDF link near the top", () => 
   assert.equal(page.querySelector("header .action-link").textContent, "Download CV (PDF)");
 });
 
-test("Contact offers the existing public route without a form", () => {
+test("Contact offers LinkedIn and FocusOn enquiries without a form", () => {
   const { content, render } = createApp();
   const page = render("contact");
   assert.equal(page.querySelector("h1").textContent, "Contact");
@@ -124,6 +124,10 @@ test("Contact offers the existing public route without a form", () => {
   const link = page.querySelector("a");
   assert.equal(link.getAttribute("href"), content.person.linkedin.href);
   assert.equal(link.textContent, content.person.linkedin.label);
+  const focusOn = page.querySelector('a[href="mailto:hello@focusoncrm.com"]');
+  assert.equal(focusOn.getAttribute("href"), content.contact.focusOn.href);
+  assert.equal(focusOn.textContent, content.contact.focusOn.email);
+  assert(page.textContent.includes(content.contact.labels.focusOn));
   assert.equal(page.querySelector("form"), null);
 });
 

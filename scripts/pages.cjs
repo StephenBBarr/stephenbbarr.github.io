@@ -30,7 +30,7 @@ function renderPage(section, content = defaultContent) {
 
 function renderAbout(about) {
   const paragraphs = about.paragraphs
-    .map((text) => renderParagraph(text))
+    .map((text) => renderParagraph(text, "", about.focusOn))
     .join("");
   const readingText = about.paragraphs.join(" ");
 
@@ -56,6 +56,9 @@ function renderContact(content) {
     location: escape(person.location),
     linkedInLabel: escape(contact.labels.linkedin),
     linkedIn: renderLinkedIn(person.linkedin),
+    focusOnLabel: escape(contact.labels.focusOn),
+    focusOnAddress: escape(contact.focusOn.href),
+    focusOnEmail: escape(contact.focusOn.email),
   });
 }
 
@@ -112,8 +115,14 @@ function renderPageHeading(section, content) {
   return `<h1 class="visually-hidden">${escape(navigationItem.label)}</h1>`;
 }
 
-function renderParagraph(text, className = "") {
-  return `<p class="${className}">${escape(text)}</p>`;
+function renderParagraph(text, className = "", inlineLink) {
+  const linkStart = inlineLink ? text.indexOf(inlineLink.label) : -1;
+  const body = linkStart < 0
+    ? escape(text)
+    : escape(text.slice(0, linkStart))
+      + `<a href="${escape(inlineLink.href)}">${escape(inlineLink.label)}</a>`
+      + escape(text.slice(linkStart + inlineLink.label.length));
+  return `<p class="${className}">${body}</p>`;
 }
 
 function renderLinkedIn(link, label = link.label) {
@@ -140,7 +149,9 @@ function renderAchievements(achievements) {
 }
 
 function renderExperience(entry) {
-  const organisation = escape(entry.organisation);
+  const organisation = entry.href
+    ? `<a href="${escape(entry.href)}">${escape(entry.organisation)}</a>`
+    : escape(entry.organisation);
   const role = renderParagraph(entry.role, "meta");
   const achievements = renderAchievements(entry.achievements);
   let subrole = "";

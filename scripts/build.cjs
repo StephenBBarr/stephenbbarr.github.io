@@ -13,15 +13,15 @@ const { webAddress } = require("./gemtext.js");
 const projectRoot = path.resolve(__dirname, "..");
 const pageDescriptions = {
   about:
-    "Stephen Barr, software architect and engineering lead in Northern Ireland. " +
-    "Building complex systems and helping organisations grow their capacity to deliver.",
+    "Stephen Barr, founder of FocusOn CRM, software architect and engineer in Northern Ireland. " +
+    "Building software for employment, skills and careers programmes.",
   cv:
-    "Stephen Barr's abridged CV: software architecture, engineering leadership, " +
-    "selected projects and experience. Includes a downloadable PDF.",
+    "Stephen Barr's abridged CV: founder of FocusOn CRM, software architect and engineer. " +
+    "More than ten years of experience. Includes a downloadable PDF.",
   blog: "Stephen Barr's writing about software and things he is learning.",
   contact:
-    "Contact Stephen Barr, a software architect and engineering lead based in " +
-    "Northern Ireland, through LinkedIn.",
+    "Contact Stephen Barr, founder of FocusOn CRM, in Northern Ireland. " +
+    "Email for FocusOn enquiries or connect through LinkedIn.",
   "not-found":
     "This page could not be found. Return to Stephen Barr's portfolio.",
 };
