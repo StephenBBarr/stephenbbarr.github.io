@@ -23,16 +23,26 @@ const content = {
     labels: {
       location: "Location",
       linkedin: "LinkedIn",
+      focusOn: "FocusOn enquiries",
+    },
+    focusOn: {
+      email: "hello@focusoncrm.com",
+      href: "mailto:hello@focusoncrm.com",
     },
   },
   about: {
     ariaLabel: "About Stephen Barr",
-    headline: "Software architect and engineering lead",
+    headline: "Founder of FocusOn CRM. Software architect and engineer.",
     readingStarted: "Reading the About section aloud.",
+    focusOn: {
+      label: "FocusOn CRM",
+      href: "https://www.focusoncrm.com/",
+    },
     paragraphs: [
-      "I’m Stephen Barr, based in Northern Ireland. I design and build complex software and lead engineering teams. My focus is giving organisations reliable systems and the engineering capability to develop them as their needs grow.",
-      "My experience includes multi-tenant public-service platforms that support multiple programmes through one shared system. I look for ways to reuse what works, simplify delivery and get more value from the time, budget and people available.",
-      "I build on that experience with AI agents that help teams plan, build, test and review software. My aim is to expand what teams can deliver while keeping people responsible for technical decisions and quality.",
+      "I’m Stephen Barr, based in Northern Ireland and the founder of FocusOn CRM. I’m building software for organisations delivering employment, skills and careers programmes, helping their teams coordinate support and record the progress people make.",
+      "My focus is building and supporting FocusOn CRM for the long term. I lead its direction, design its architecture and write the software. That means thinking about the whole business: understanding what customers need, deciding what to build and creating a product they can rely on.",
+      "I bring more than ten years of experience designing software, leading engineering teams and running services in production. My work spans public services and industry, with responsibility for reliability, cost and the continued development of the systems I build.",
+      "Here, I share my work, experience and writing about what I’m building and learning along the way.",
     ],
     portrait: {
       source: "/assets/stephen-barr.jpg",
@@ -44,12 +54,13 @@ const content = {
   cv: {
     ariaLabel: "Stephen Barr abridged public curriculum vitae",
     reading: {
-      started: "Reading a short chronological CV story aloud.",
+      started: "Reading a short CV summary aloud.",
       text: [
-        "Stephen Barr is a hands-on software architect and engineering leader in Northern Ireland, with more than nine years of experience. He combines C sharp, dot net and Azure engineering with architecture, people leadership and responsibility for production services.",
-        "His path into software began with computing at North West Regional College, followed by a computer games development degree at Ulster University. During his studies, he joined E and I Engineering as an intern. He later returned as a full-stack developer, building systems for inventory, logistics, manufacturing and maintenance.",
-        "Stephen then worked at Foods Connected, delivering features and production fixes for a large supply-chain platform, before returning to E and I. He later moved to Education Development Trust, where he became a systems architect and lead software engineer.",
-        "There, he built a configurable public-service platform now used across more than a dozen programmes supporting hundreds of thousands of people. He leads engineers, remains hands-on, owns production reliability, and reduced annual cloud costs by more than ninety percent.",
+        "Stephen Barr is the founder of FocusOn CRM, a software architect and engineer based in Northern Ireland, with more than ten years of experience.",
+        "His focus is building and supporting FocusOn CRM for the long term. He leads its direction, designs its architecture and writes software for organisations delivering employment, skills and careers programmes. It gives each programme its own workspace, helping teams coordinate support and record people’s progress.",
+        "At Education Development Trust, he built a configurable public-service platform used across more than a dozen programmes supporting hundreds of thousands of people. His work included leading and developing engineers, running production services and reducing annual cloud costs by more than ninety percent.",
+        "His earlier work at E and I Engineering and Foods Connected covered full-stack development for manufacturing, logistics and supply-chain systems. He brings a strong C sharp, dot net and Azure background, supported by automated testing and AI-assisted development with human review.",
+        "He studied computing at North West Regional College and computer games development at Ulster University.",
         "This is a short public overview. A more detailed CV is available through LinkedIn.",
       ].join(" "),
     },
@@ -58,7 +69,7 @@ const content = {
       downloadLabel: "Download CV (PDF)",
     },
     identity: {
-      title: "Software Architect | Engineering Lead",
+      title: "Founder of FocusOn CRM | Software Architect and Engineer",
     },
     notice: {
       label: "Abridged CV",
@@ -69,70 +80,79 @@ const content = {
     profile: {
       ariaLabel: "Profile",
       body: [
-        "Hands-on software architect and engineering leader with more than nine",
-        "years of experience designing and delivering software. Combines a strong",
-        "C#/.NET and Azure background with architecture, people leadership and",
-        "operational ownership. Leads multidisciplinary teams, develops engineers",
-        "and works with senior stakeholders to balance scope, cost, risk and",
-        "delivery. Uses controlled AI-assisted engineering practices while",
-        "retaining human accountability for technical decisions and production",
-        "releases.",
+        "Founder of FocusOn CRM and a hands-on software architect and engineer",
+        "with more than ten years of experience. Building software for",
+        "organisations delivering employment, skills and careers programmes,",
+        "with responsibility for business direction, product development and",
+        "software architecture. Brings experience leading engineering teams,",
+        "delivering large public-service platforms and running reliable production",
+        "services. Focused on building and supporting FocusOn CRM for the long term.",
       ].join(" "),
     },
     experience: {
       ariaLabel: "Professional experience",
       entries: [
         {
+          organisation: "FocusOn CRM",
+          href: "https://www.focusoncrm.com/",
+          role: "Founder, Software Architect and Engineer",
+          achievements: [
+            {
+              lead: "Business and product direction:",
+              body: "Lead the business, set product priorities and guide development around customer needs.",
+            },
+            {
+              lead: "Architecture and development:",
+              body: [
+                "Design and build a configurable .NET platform for organisations",
+                "delivering employment, skills and careers programmes.",
+              ].join(" "),
+            },
+            {
+              lead: "Programme flexibility:",
+              body: [
+                "Build separate programme workspaces within one shared system,",
+                "supporting different activities, outcomes and delivery needs.",
+              ].join(" "),
+            },
+            {
+              lead: "Reliable foundations:",
+              body: [
+                "Build access controls, versioned evidence management and resilient",
+                "background processing, supported by automated testing and",
+                "AI-assisted development with human review.",
+              ].join(" "),
+            },
+          ],
+        },
+        {
           organisation: "Education Development Trust",
           role: "Systems Architect / Lead Software Engineer",
           achievements: [
             {
-              lead: "Built a public-service platform from the ground up:",
+              lead: "Built and scaled a public-service platform:",
               body: [
                 "Designed a configurable, multi-tenant platform that replaced",
-                "repeated bespoke development with reusable capabilities.",
-              ].join(" "),
-            },
-            {
-              lead: "Scaled the platform successfully:",
-              body: [
-                "Expanded it across more than a dozen programmes supporting",
+                "repeated bespoke development and expanded across more than a",
+                "dozen programmes supporting",
                 "hundreds of thousands of people.",
               ].join(" "),
             },
             {
-              lead: "Set technical direction:",
+              lead: "Led and developed engineers:",
               body: [
-                "Remained hands-on in C#/.NET while leading engineers and analysts",
-                "through architecture decisions and fixed-date delivery.",
-              ].join(" "),
-            },
-            {
-              lead: "Delivered consistently:",
-              body: [
-                "Met every agreed programme deadline by balancing priorities, scope",
-                "and practical alternatives.",
-              ].join(" "),
-            },
-            {
-              lead: "Developed engineering capability:",
-              body: [
+                "Remained hands-on in C#/.NET while leading engineers and analysts.",
                 "Recruited engineers, designed technical assessments and supported",
-                "progression through clear expectations, feedback and coaching.",
-              ].join(" "),
-            },
-            {
-              lead: "Introduced responsible AI-assisted delivery:",
-              body: [
-                "Established controlled workflows for planning, implementation,",
-                "testing and review, with human approval retained.",
+                "progression through feedback and coaching. Met every agreed",
+                "programme deadline by balancing scope and priorities.",
               ].join(" "),
             },
             {
               lead: "Owned production reliability:",
               body: [
-                "Led the investigation and resolution of application, data, cloud",
-                "and integration issues, adding controls to prevent recurrence.",
+                "Resolved application, data, cloud and integration issues and added",
+                "controls to prevent recurrence. Delivered software within ISO 27001",
+                "and Cyber Essentials Plus requirements.",
               ].join(" "),
             },
             {
@@ -143,10 +163,11 @@ const content = {
               ].join(" "),
             },
             {
-              lead: "Worked within audited controls:",
+              lead: "Introduced controlled AI-assisted delivery:",
               body: [
-                "Delivered software within ISO 27001 and Cyber Essentials Plus",
-                "requirements.",
+                "Established workflows for planning, implementation, testing and",
+                "review, retaining human approval for technical decisions and",
+                "production releases.",
               ].join(" "),
             },
           ],
@@ -208,29 +229,6 @@ const content = {
               body: [
                 "Built an AI-assisted prototype for transcription, summarisation and",
                 "contextual careers information using anonymised inputs.",
-              ].join(" "),
-            },
-          ],
-        },
-        {
-          name: "FocusOn CRM",
-          achievements: [
-            {
-              lead: "Independent product development:",
-              body: "Designed and developed a configurable, multi-tenant .NET product.",
-            },
-            {
-              lead: "Secure and resilient foundations:",
-              body: [
-                "Built layered security, versioned evidence management and resilient",
-                "background processing.",
-              ].join(" "),
-            },
-            {
-              lead: "Controlled AI engineering:",
-              body: [
-                "Uses automated testing and controlled AI-assisted development with",
-                "human review.",
               ].join(" "),
             },
           ],
