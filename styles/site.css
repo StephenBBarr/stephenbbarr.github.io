@@ -261,6 +261,17 @@ main:focus {
   max-width: 100%;
 }
 
+.about-heading {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.about-subtitle {
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+
 .about-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 7.5rem;
