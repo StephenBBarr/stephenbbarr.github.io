@@ -37,6 +37,7 @@ function renderAbout(about) {
   return renderTemplate("about", {
     ariaLabel: escape(about.ariaLabel),
     headline: escape(about.headline),
+    subtitle: escape(about.subtitle),
     paragraphs,
     portraitSource: escape(about.portrait.source),
     portraitDescription: escape(about.portrait.alternativeText),

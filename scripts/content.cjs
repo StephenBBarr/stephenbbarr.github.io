@@ -32,7 +32,8 @@ const content = {
   },
   about: {
     ariaLabel: "About Stephen Barr",
-    headline: "Founder of FocusOn CRM. Software architect and engineer.",
+    headline: "Founder of FocusOn CRM",
+    subtitle: "Software architect and engineer",
     readingStarted: "Reading the About section aloud.",
     focusOn: {
       label: "FocusOn CRM",

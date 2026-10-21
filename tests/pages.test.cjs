@@ -68,7 +68,7 @@ test("About retains every paragraph and uses a still portrait", () => {
   const { content, render } = createApp();
   const textPage = render("about");
   const expected = Array.from(content.about.paragraphs);
-  assert.deepEqual([...textPage.querySelectorAll("p")].map((node) => node.textContent), expected);
+  assert.deepEqual([...textPage.querySelectorAll(".about-layout > .stack > p")].map((node) => node.textContent), expected);
   assert.equal(textPage.querySelector("h1").textContent, content.about.headline);
   assert.equal(textPage.querySelectorAll(".about-layout .about-portrait img").length, 1);
   assert.equal(textPage.querySelector("img").getAttribute("src"), "/assets/stephen-barr.jpg");
@@ -154,7 +154,7 @@ test("templates escape text and attribute values without interpreting markup", (
     },
   }));
   const page = render("about");
-  assert.equal(page.querySelector("p").textContent, input);
+  assert.equal(page.querySelector(".about-layout > .stack > p").textContent, input);
   assert.equal(page.querySelector("[onerror]"), null);
   assert.equal(page.querySelector("[data-reading]").dataset.readingText, input);
   assert.match(page.outerHTML, /&lt;img/);
