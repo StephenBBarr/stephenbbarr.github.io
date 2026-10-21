@@ -40,6 +40,23 @@ test("opening a post fetches only its body and preserves its indexed title, date
   assertMetadataUnchanged(app);
 });
 
+test("a loaded post displays same-capsule images through its configured bridge", async () => {
+  const app = createPostApp({ fetcher: async () => textResponse([
+    "# Source title", "The demo uses fictional records.",
+    "=> ../images/demo/one.png Participants in the demonstration.",
+    "=> https://elsewhere.test/another.png Another image",
+  ].join("\n")) });
+  await drain();
+  const image = app.body.querySelector("figure img");
+  assert(image);
+  assert.equal(image.getAttribute("src"), "https://bridge.example.test/blog/images/demo/one.png");
+  assert.equal(image.getAttribute("alt"), "Participants in the demonstration.");
+  assert.equal(app.body.querySelectorAll("img").length, 1);
+  assert.equal(app.body.lastElementChild.querySelector("a").getAttribute("href"), "https://elsewhere.test/another.png");
+  assert.equal(app.retry.hidden, true);
+  assertMetadataUnchanged(app);
+});
+
 test("the index and nonblog pages make no post request", async () => {
   for (const file of ["blog/index.html", "index.html", "contact/index.html"]) {
     const app = createPostApp({ file, fetcher: async () => assert.fail("Unexpected fetch") });

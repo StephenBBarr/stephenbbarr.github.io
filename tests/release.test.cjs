@@ -1,12 +1,9 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
 const test = require("node:test");
 const { checkRelease } = require("../scripts/check-release.cjs");
-const { settings, createFetcher, writeBlogDirectory } = require("./helpers/blog-content.cjs");
+const { settings, createFetcher } = require("./helpers/blog-content.cjs");
 
 test("the release check validates the index and its browser CORS permission", async () => {
   const { fetcher, calls } = createFetcher();
@@ -28,14 +25,6 @@ test("an unpublished blog or a broken index cannot pass the release check", asyn
     if (url.pathname === "/blog/index") response.status = 404;
   });
   await assert.rejects(checkRelease({ settings, fetcher }), /index: HTTP 404/);
-});
-
-test("the release check accepts the same offline snapshot as the build", async (t) => {
-  const sourceDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-release-"));
-  t.after(() => fs.rmSync(sourceDirectory, { recursive: true, force: true }));
-  writeBlogDirectory(sourceDirectory);
-  const result = await checkRelease({ settings, sourceDirectory, fetcher: async () => assert.fail("Unexpected network request") });
-  assert.equal(result.posts, 2);
 });
 
 test("release checks reject a bridge that does not allow the portfolio origin", async () => {

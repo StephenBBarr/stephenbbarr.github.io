@@ -62,28 +62,26 @@ function distributionFiles(options) {
   for (const file of publicAssets) {
     files.set(file, fs.readFileSync(path.join(projectRoot, file)));
   }
-  if (options.blog.sourceDirectory) {
-    copyLocalPosts(files, options.blog);
-  }
   return files;
-}
-
-function copyLocalPosts(files, blog) {
-  for (const post of blog.posts) {
-    const source = path.join(blog.sourceDirectory, "posts", `${post.slug}.gmi`);
-    // Local previews serve the original text on demand, just like the bridge.
-    // The .txt extension lets the static preview server use text/plain.
-    files.set(postSource(post, blog).slice(1), fs.readFileSync(source));
-  }
 }
 
 async function run() {
   const { values } = parseArgs({
     options: {
-      "blog-dir": { type: "string" },
+      local: { type: "boolean", default: false },
     },
   });
-  const blog = await loadBlog({ sourceDirectory: values["blog-dir"], origin: content.siteOrigin });
+  const blog = await loadBlog({
+    origin: values.local ? "http://127.0.0.1:8000" : content.siteOrigin,
+    ...(values.local ? {
+      localPreview: true,
+      settings: {
+        enabled: true,
+        bridgeBase: "http://127.0.0.1:5080/",
+        capsuleIndex: "gemini://localhost/blog/",
+      },
+    } : {}),
+  });
   const files = distributionFiles({ blog });
   const outputDirectory = path.join(projectRoot, "dist");
 
@@ -193,15 +191,14 @@ function assetUrl(file) {
 }
 
 function contentSecurityPolicy(postUrl) {
-  const connectSource = postUrl
-    ? (postUrl.startsWith("/") ? "'self'" : new URL(postUrl).origin)
-    : "'none'";
+  const bridgeOrigin = postUrl ? new URL(postUrl).origin : null;
+  const imageSources = bridgeOrigin ? `'self' ${bridgeOrigin}` : "'self'";
   return [
     "default-src 'none'",
     "script-src 'self'",
     "style-src 'self'",
-    "img-src 'self'",
-    `connect-src ${connectSource}`,
+    `img-src ${imageSources}`,
+    `connect-src ${bridgeOrigin || "'none'"}`,
     "base-uri 'none'",
     "object-src 'none'",
     "form-action 'none'",

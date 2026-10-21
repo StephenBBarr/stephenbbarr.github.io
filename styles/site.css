@@ -378,6 +378,31 @@ main:focus {
   border-inline-start: 2px solid var(--line);
 }
 
+.blog-figure,
+.blog-image-link {
+  margin-inline: auto;
+  max-width: 100%;
+}
+
+.blog-image-link {
+  display: block;
+  width: fit-content;
+}
+
+.blog-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
+.blog-figure figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
 .blog-post pre {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.875em;

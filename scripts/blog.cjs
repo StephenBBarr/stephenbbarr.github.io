@@ -1,7 +1,5 @@
 "use strict";
 
-const fs = require("node:fs");
-const path = require("node:path");
 const { parseHTML } = require("linkedom");
 const gemtext = require("./gemtext.js");
 const { renderTemplate, escape } = require("./pages.cjs");
@@ -15,20 +13,13 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-async function loadBlog({ settings = require("./config.cjs"), fetcher = fetch, sourceDirectory, origin } = {}) {
+async function loadBlog({ settings = require("./config.cjs"), fetcher = fetch, origin, localPreview = false } = {}) {
   if (settings?.enabled === false) {
     return { ready: false, index: "", posts: [] };
   }
 
-  const configuration = validateSettings(settings);
-  const useSourceDirectory = sourceDirectory !== undefined;
-  if (useSourceDirectory && (typeof sourceDirectory !== "string" || !sourceDirectory.trim())) {
-    throw new Error("sourceDirectory must be a non-empty directory path.");
-  }
-
-  const index = useSourceDirectory
-    ? await readBoundedText(fs.createReadStream(path.join(sourceDirectory, "index.gmi")), "blog/index")
-    : await fetchBridgeText("blog/index", configuration.bridgeBase, fetcher, origin);
+  const configuration = validateSettings(settings, { localPreview });
+  const index = await fetchBridgeText("blog/index", configuration.bridgeBase, fetcher, origin);
   requireTitle(index, "blog/index");
   const posts = parsePostIndex(index, configuration.capsuleIndex);
 
@@ -38,7 +29,6 @@ async function loadBlog({ settings = require("./config.cjs"), fetcher = fetch, s
     ...configuration,
     index,
     posts,
-    ...(useSourceDirectory ? { sourceDirectory: path.resolve(sourceDirectory) } : {}),
   };
 }
 
@@ -84,9 +74,7 @@ function renderPost(post, blog) {
 }
 
 function postSource(post, blog) {
-  return blog.sourceDirectory
-    ? `/blog-source/${post.slug}.txt`
-    : new URL(`blog/posts/${post.slug}`, blog.bridgeBase).href;
+  return new URL(`blog/posts/${post.slug}`, blog.bridgeBase).href;
 }
 
 function parsePostIndex(index, capsuleIndex) {
@@ -280,7 +268,7 @@ function createDate(value) {
   return date;
 }
 
-function validateSettings(settings) {
+function validateSettings(settings, { localPreview = false } = {}) {
   if (settings?.enabled !== true) {
     throw new Error("enabled must be true or false.");
   }
@@ -297,6 +285,12 @@ function validateSettings(settings) {
   const publicEndpoints = bridge.protocol === "https:"
     && isPublicDnsHost(bridge.hostname)
     && isPublicDnsHost(capsule.hostname);
+  if (localPreview) {
+    if (bridge.href !== "http://127.0.0.1:5080/" || capsule.href !== "gemini://localhost/blog/") {
+      throw new Error("The local preview must use the existing Compose bridge and localhost capsule.");
+    }
+    return { bridgeBase: bridge.href, capsuleIndex: capsule.href };
+  }
   if (!publicEndpoints) {
     throw new Error("The public bridge must use HTTPS; public endpoints must use DNS hostnames, not IP addresses or local-only names.");
   }

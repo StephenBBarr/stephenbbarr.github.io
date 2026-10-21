@@ -17,6 +17,7 @@
     baseUrl,
     capsuleIndex,
     publishedSlugs,
+    imageBaseUrl,
     titleFallback = "Blog post",
   } = {}) {
     const article = document.createElement("article");
@@ -77,7 +78,7 @@
         if (customLink) {
           article.append(customLink);
         } else {
-          appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs);
+          appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl);
         }
         continue;
       }
@@ -149,10 +150,28 @@
     preformatted.setAttribute("aria-label", label || "Preformatted text");
   }
 
-  function appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs) {
+  function appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl) {
     const parsedLink = parseLink(line, baseUrl || capsuleIndex);
     if (!parsedLink) {
       return appendBlock(article, "p", line, "gemtext-link");
+    }
+
+    const imageUrl = bridgeImageAddress(parsedLink.address, capsuleIndex, imageBaseUrl);
+    if (imageUrl) {
+      const label = parsedLink.rawLabel?.trim() || "Blog image";
+      const figure = appendBlock(article, "figure", "", "blog-figure");
+      const link = article.ownerDocument.createElement("a");
+      link.className = "blog-image-link";
+      link.setAttribute("href", imageUrl);
+      const image = article.ownerDocument.createElement("img");
+      image.setAttribute("src", imageUrl);
+      image.setAttribute("alt", label);
+      image.setAttribute("loading", "lazy");
+      image.setAttribute("decoding", "async");
+      link.append(image);
+      figure.append(link);
+      appendBlock(figure, "figcaption", label);
+      return figure;
     }
 
     const destination = mapLinkAddress(parsedLink.address, capsuleIndex, publishedSlugs);
@@ -166,6 +185,30 @@
     link.textContent = (parsedLink.rawLabel?.trim() || parsedLink.target) + destination.suffix;
     paragraph.append(link);
     return paragraph;
+  }
+
+  function bridgeImageAddress(address, capsuleIndex, imageBaseUrl) {
+    if (!imageBaseUrl || !capsuleIndex || address.protocol !== "gemini:") {
+      return null;
+    }
+    let capsule;
+    let bridge;
+    try {
+      capsule = new URL(capsuleIndex);
+      bridge = new URL(imageBaseUrl);
+    } catch {
+      return null;
+    }
+    // Fetch only images in the configured capsule's blog through its existing bridge.
+    if (capsule.protocol !== "gemini:" || address.hostname.toLowerCase() !== capsule.hostname.toLowerCase()
+      || (address.port || "1965") !== (capsule.port || "1965") || address.search || address.hash
+      || !["https:", "http:"].includes(bridge.protocol) || bridge.username || bridge.password
+      || bridge.search || bridge.hash || bridge.pathname !== "/blog/images/") {
+      return null;
+    }
+    const match = /^\/blog\/images\/([^/]+)\/([a-z0-9]+(?:-[a-z0-9]+)*\.(?:png|jpe?g|webp|gif|avif))$/.exec(address.pathname);
+    return match && postName(match[1]) && postName(match[2].split(".")[0])
+      ? new URL(`${match[1]}/${match[2]}`, bridge).href : null;
   }
 
   function parseLink(line, baseUrl) {

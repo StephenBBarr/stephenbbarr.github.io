@@ -1,14 +1,11 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
 const test = require("node:test");
 const { parseHTML } = require("linkedom");
 const { loadBlog, parsePostIndex, renderIndex, renderPost } = require("../scripts/blog.cjs");
 const gemtext = require("../scripts/gemtext.js");
-const { blog, disabledBlog, settings, writeBlogDirectory, createFetcher } = require("./helpers/blog-content.cjs");
+const { blog, disabledBlog, settings, createFetcher } = require("./helpers/blog-content.cjs");
 
 const rendererDocument = parseHTML("<html><body></body></html>").document;
 const renderGemtext = (text, options = {}) => gemtext.render(text, { document: rendererDocument, ...options });
@@ -35,6 +32,26 @@ test("the blog loader reads only the index and leaves post bodies for readers", 
 test("disabled blogs need neither endpoints nor network access", async () => {
   const fetcher = async () => assert.fail("A disabled blog must make no request");
   assert.deepEqual(await loadBlog({ settings: { enabled: false }, fetcher }), disabledBlog);
+});
+
+test("the explicit local preview reads the existing Compose bridge without copying article bodies", async () => {
+  const localSettings = {
+    enabled: true,
+    bridgeBase: "http://127.0.0.1:5080/",
+    capsuleIndex: "gemini://localhost/blog/",
+  };
+  const { fetcher, calls } = createFetcher((response) => {
+    response.headers["access-control-allow-origin"] = "http://127.0.0.1:8000";
+  });
+  const loaded = await loadBlog({ settings: localSettings, localPreview: true, fetcher, origin: "http://127.0.0.1:8000" });
+  assert.equal(loaded.bridgeBase, localSettings.bridgeBase);
+  assert.equal(loaded.capsuleIndex, localSettings.capsuleIndex);
+  assert.equal(Object.hasOwn(loaded, "sourceDirectory"), false);
+  assert(loaded.posts.every((post) => !Object.hasOwn(post, "text")));
+  assert.deepEqual(calls.map(({ url }) => url), ["http://127.0.0.1:5080/blog/index"]);
+  assert.equal(calls[0].options.headers.Origin, "http://127.0.0.1:8000");
+  await assert.rejects(loadBlog({ settings: localSettings, fetcher }), /public bridge/);
+  await assert.rejects(loadBlog({ settings: { ...localSettings, bridgeBase: "http://127.0.0.1:9999/" }, localPreview: true, fetcher }), /existing Compose bridge/);
 });
 
 test("failed index requests stop the build with the failing resource", async () => {
@@ -96,20 +113,6 @@ test("an empty index or a heading present only inside a fence stops publication"
     });
     await assert.rejects(loadBlog({ settings, fetcher }), /empty|meaningful article heading/);
   }
-});
-
-test("the offline loader needs only the index and makes no requests", async (t) => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-blog-source-"));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
-  writeBlogDirectory(directory);
-  fs.writeFileSync(path.join(directory, "posts/unlisted.gmi"), "Not a published article");
-  const fetcher = async () => assert.fail("Offline builds must not fetch");
-  assert.deepEqual(await loadBlog({ settings, fetcher, sourceDirectory: directory }), { ...blog, sourceDirectory: directory });
-  fs.unlinkSync(path.join(directory, "posts/new.gmi"));
-  assert.deepEqual(await loadBlog({ settings, fetcher, sourceDirectory: directory }), { ...blog, sourceDirectory: directory });
-  fs.writeFileSync(path.join(directory, "index.gmi"), "# Blog\n" + "é".repeat(1024 * 512));
-  await assert.rejects(loadBlog({ settings, fetcher, sourceDirectory: directory }), /oversized|too large/i);
-
 });
 
 // Only valid, dated links outside code fences become published posts.
@@ -240,6 +243,57 @@ test("same-capsule post links use clean routes while unsafe links remain text", 
     assert(article.textContent.includes(text));
     assert(!links.some((link) => link.getAttribute("href") === text));
   }
+});
+
+test("same-capsule image links become accessible figures in their original reading order", () => {
+  const source = [
+    "# A demo", "Before the first image.",
+    "=> ../images/demo/one.png A fictional mentoring session.",
+    "Between the images.",
+    "=> gemini://capsule.example.test/blog/images/demo/two.webp People <script>shown</script> together.",
+    "After the second image.",
+  ].join("\n");
+  const options = {
+    baseUrl: "gemini://capsule.example.test/blog/posts/demo.gmi",
+    capsuleIndex: settings.capsuleIndex,
+    imageBaseUrl: "https://bridge.example.test/blog/images/",
+  };
+  const article = renderGemtext(source, options);
+  assert.deepEqual([...article.children].map((node) => node.localName), ["h1", "p", "figure", "p", "figure", "p"]);
+  const images = [...article.querySelectorAll("img")];
+  assert.deepEqual(images.map((image) => image.getAttribute("src")), [
+    "https://bridge.example.test/blog/images/demo/one.png",
+    "https://bridge.example.test/blog/images/demo/two.webp",
+  ]);
+  for (const image of images) {
+    assert.equal(image.getAttribute("loading"), "lazy");
+    assert.equal(image.getAttribute("decoding"), "async");
+    assert.equal(image.parentElement.getAttribute("href"), image.getAttribute("src"));
+    assert.equal(image.getAttribute("alt"), image.closest("figure").querySelector("figcaption").textContent);
+  }
+  assert.equal(images[1].getAttribute("alt"), "People <script>shown</script> together.");
+  assert.equal(article.querySelector("script"), null);
+  assert.equal(renderGemtext(source, { ...options, imageBaseUrl: undefined }).querySelector("img"), null);
+});
+
+test("other capsules, web images and malformed image links remain ordinary links", () => {
+  const source = [
+    "# Links",
+    "=> gemini://elsewhere.test/blog/images/demo/one.png External capsule",
+    "=> gemini://capsule.example.test/media/one.png Other folder",
+    "=> gemini://capsule.example.test/blog/images/demo/vector.svg Vector",
+    "=> gemini://capsule.example.test/blog/images/demo/one.png?download=1 Query",
+    "=> gemini://capsule.example.test/blog/images/demo/one.png#part Fragment",
+    "=> https://capsule.example.test/blog/images/demo/one.png Different protocol",
+    "=> gemini://capsule.example.test:1966/blog/images/demo/one.png Different port",
+    "=> gemini://capsule.example.test/blog/images/demo/%6fne.png Encoded filename",
+    "=> gemini://capsule.example.test/blog/images/demo/nested/one.png Nested path",
+  ].join("\n");
+  const article = renderGemtext(source, {
+    capsuleIndex: settings.capsuleIndex, imageBaseUrl: "https://bridge.example.test/blog/images/",
+  });
+  assert.equal(article.querySelector("figure,img"), null);
+  assert.equal(article.querySelectorAll("a").length, 9);
 });
 
 test("Gemtext preserves one page heading and normalizes orphan subheadings", () => {
