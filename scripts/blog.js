@@ -27,10 +27,12 @@
     try {
       const address = postAddress();
       const text = await fetchPost(address);
+      const images = [];
       const article = renderer.render(text, {
         baseUrl: new URL(`posts/${post.dataset.postSlug}.gmi`, post.dataset.capsuleIndex).href,
         capsuleIndex: post.dataset.capsuleIndex,
         imageBaseUrl: new URL("../images/", address).href,
+        loadImage: (image, url) => images.push({ image, url }),
         titleFallback: "",
       });
       const heading = article.querySelector("h1");
@@ -47,6 +49,7 @@
         content.append(article.firstChild);
       }
       body.replaceChildren(content);
+      loadImages(images);
       missingPostMetadata?.remove();
       missingPostMetadata = undefined;
       showStatus("Post loaded.", true);
@@ -75,6 +78,47 @@
       body.removeAttribute("aria-busy");
       updateRetry();
     }
+  }
+
+  function loadImages(images) {
+    // The bridge permits two active requests per reader. Load one image at a
+    // time so browser preloading cannot exhaust that limit.
+    let index = 0;
+    function next() {
+      const item = images[index++];
+      if (!item || !item.image.isConnected) return;
+      const { image, url } = item;
+      let retried = false;
+      function clearListeners() {
+        image.removeEventListener("load", loaded);
+        image.removeEventListener("error", failed);
+      }
+      function loaded() {
+        clearListeners();
+        next();
+      }
+      function failed() {
+        clearListeners();
+        if (!retried) {
+          retried = true;
+          setTimeout(start, 1000);
+          return;
+        }
+        image.hidden = true;
+        image.parentElement.append(document.createTextNode("Open full-size image"));
+        next();
+      }
+      function start() {
+        if (!image.isConnected) return;
+        image.addEventListener("load", loaded);
+        image.addEventListener("error", failed);
+        // A lazy image outside the viewport would stall the rest of the queue.
+        image.setAttribute("loading", "eager");
+        image.setAttribute("src", url);
+      }
+      start();
+    }
+    next();
   }
 
   function postAddress() {

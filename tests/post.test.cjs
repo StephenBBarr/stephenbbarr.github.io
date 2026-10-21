@@ -57,6 +57,63 @@ test("a loaded post displays same-capsule images through its configured bridge",
   assertMetadataUnchanged(app);
 });
 
+test("three inline images load in order without competing for bridge permits", async () => {
+  const app = createPostApp({ fetcher: async () => textResponse([
+    "# Source title", ...["one", "two", "three"].map(name => `=> ../images/demo/${name}.png ${name}`),
+  ].join("\n")) });
+  await drain();
+  const images = [...app.body.querySelectorAll("img")];
+  const loaded = image => image.dispatchEvent(new app.document.defaultView.Event("load"));
+  assert.equal(images.length, 3);
+  assert.match(images[0].getAttribute("src"), /one.png$/);
+  assert.equal(images[1].hasAttribute("src"), false);
+  assert.equal(images[2].hasAttribute("src"), false);
+  loaded(images[0]);
+  assert.match(images[1].getAttribute("src"), /two.png$/);
+  assert.equal(images[1].getAttribute("loading"), "eager");
+  loaded(images[0]);
+  assert.equal(images[2].hasAttribute("src"), false);
+  loaded(images[1]);
+  assert.match(images[2].getAttribute("src"), /three.png$/);
+  loaded(images[2]);
+  assert.equal(app.requests.length, 1);
+});
+
+test("a failed image gets one delayed retry and retains a useful link if it still fails", async () => {
+  const clock = manualClock();
+  const app = createPostApp({ ...clock, fetcher: async () => textResponse([
+    "# Source title", "=> ../images/demo/one.png First caption", "=> ../images/demo/two.png Second caption",
+  ].join("\n")) });
+  await drain();
+  const [first, second] = app.body.querySelectorAll("img");
+  const failed = image => image.dispatchEvent(new app.document.defaultView.Event("error"));
+  failed(first);
+  assert.deepEqual(clock.pendingDelays, [1000]);
+  assert.equal(second.hasAttribute("src"), false);
+  clock.advance(1000);
+  failed(first);
+  assert.equal(first.hidden, true);
+  assert.match(first.parentElement.textContent, /Open full-size image/);
+  assert.match(first.parentElement.getAttribute("href"), /one.png$/);
+  assert.equal(first.closest("figure").querySelector("figcaption").textContent, "First caption");
+  assert.match(second.getAttribute("src"), /two.png$/);
+  assert.deepEqual(clock.pendingDelays, []);
+});
+
+test("removing the post cancels a delayed image retry", async () => {
+  const clock = manualClock();
+  const app = createPostApp({ ...clock, fetcher: async () => textResponse(
+    "# Source title\n=> ../images/demo/one.png First caption\n=> ../images/demo/two.png Second caption",
+  ) });
+  await drain();
+  const [first, second] = app.body.querySelectorAll("img");
+  first.dispatchEvent(new app.document.defaultView.Event("error"));
+  app.body.remove();
+  clock.advance(1000);
+  assert.equal(second.hasAttribute("src"), false);
+  assert.deepEqual(clock.pendingDelays, []);
+});
+
 test("the index and nonblog pages make no post request", async () => {
   for (const file of ["blog/index.html", "index.html", "contact/index.html"]) {
     const app = createPostApp({ file, fetcher: async () => assert.fail("Unexpected fetch") });
