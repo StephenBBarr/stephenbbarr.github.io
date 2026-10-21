@@ -11,7 +11,7 @@ const { parseHTML } = require("linkedom");
 const { buildPages, buildFiles, distributionFiles } = require("../scripts/build.cjs");
 
 const root = path.resolve(__dirname, "..");
-const { blog, disabledBlog, settings, postTexts, writeBlogDirectory } = require("./helpers/blog-content.cjs");
+const { blog, disabledBlog, settings, postTexts } = require("./helpers/blog-content.cjs");
 const pages = buildPages({ blog });
 const content = require("../scripts/content.cjs");
 const documentFor = (file) => parseHTML(pages.get(file)).document;
@@ -37,7 +37,17 @@ function createBuildFixture(t) {
     fs.cpSync(path.join(root, name), path.join(directory, name), { recursive: true });
   }
   fs.writeFileSync(path.join(directory, "scripts/config.cjs"), `module.exports = ${JSON.stringify(settings)};\n`);
-  writeBlogDirectory(path.join(directory, "blog-source"));
+  fs.writeFileSync(path.join(directory, "bridge-index.txt"), blog.index);
+  fs.writeFileSync(path.join(directory, "bridge-fetch.cjs"), `
+    global.fetch = async (url, options) => {
+      if (new URL(url).pathname !== "/blog/index") throw new Error("Builds must fetch only the index");
+      const source = require("node:fs").readFileSync(require("node:path").join(__dirname, "bridge-index.txt"));
+      return new Response(source, { headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "access-control-allow-origin": options.headers.Origin,
+      } });
+    };
+  `);
   return directory;
 }
 
@@ -65,7 +75,7 @@ function snapshotFiles(directory, prefix = "") {
 }
 
 function runBuildCommand(directory, flags = []) {
-  return spawnSync(process.execPath, ["scripts/build.cjs", ...flags], {
+  return spawnSync(process.execPath, ["--require", path.join(directory, "bridge-fetch.cjs"), "scripts/build.cjs", ...flags], {
     cwd: directory,
     encoding: "utf8",
     env: { ...process.env, NODE_PATH: path.join(root, "node_modules") },
@@ -316,42 +326,42 @@ test("the distribution contains only generated public files and runtime assets",
   }
 });
 
-test("the offline build writes only a complete clean dist and preserves it when loading or rendering fails", (t) => {
+test("the bridge build writes only a complete clean dist and preserves it when loading or rendering fails", (t) => {
   const fixture = createBuildFixture(t);
   const source = snapshotFiles(fixture);
   const destination = path.join(fixture, "dist");
-  const flags = ["--blog-dir", "blog-source"];
+  const flags = [];
   for (let pass = 0; pass < 2; pass++) {
     fs.mkdirSync(path.join(destination, "obsolete"), { recursive: true });
     fs.writeFileSync(path.join(destination, "obsolete", "page.html"), "An old page");
     const result = runBuildCommand(fixture, flags);
     assert.equal(result.status, 0, result.stderr || result.stdout);
     assert.deepEqual(snapshotFiles(fixture), source, "building must not create or change files outside dist");
-    assert.deepEqual(snapshotFiles(destination), distributionSnapshot({ ...blog, sourceDirectory: path.join(fixture, "blog-source") }), "dist must contain exactly the current build and assets");
+    assert.deepEqual(snapshotFiles(destination), distributionSnapshot(), "dist must contain exactly the current build and assets");
   }
   const published = snapshotFiles(destination);
   for (const post of blog.posts) {
-    assert.equal(fs.readFileSync(path.join(destination, `blog-source/${post.slug}.txt`), "utf8"), postTexts[post.slug]);
     const html = fs.readFileSync(path.join(destination, `blog/${post.slug}/index.html`), "utf8");
     const { document } = parseHTML(html);
-    assert.equal(document.querySelector("#blog-post").dataset.postUrl, `/blog-source/${post.slug}.txt`);
-    assert.deepEqual(policyDirectives(document.querySelector('meta[http-equiv="Content-Security-Policy"]').content)["connect-src"], ["'self'"]);
+    assert.equal(document.querySelector("#blog-post").dataset.postUrl, new URL(`blog/posts/${post.slug}`, blog.bridgeBase).href);
+    assert.equal(fs.existsSync(path.join(destination, "blog-source")), false);
+    assert.deepEqual(policyDirectives(document.querySelector('meta[http-equiv="Content-Security-Policy"]').content)["connect-src"], [new URL(blog.bridgeBase).origin]);
   }
-  for (const flag of ["--dist", "--check", "--local"]) {
+  for (const flag of ["--dist", "--check", "--blog-dir"]) {
     const result = runBuildCommand(fixture, [flag]);
     assert.notEqual(result.status, 0, `The obsolete ${flag} option must be rejected`);
     assert.deepEqual(snapshotFiles(destination), published, "invalid options must not change the current output");
     assert.deepEqual(snapshotFiles(fixture), source);
   }
 
-  const missingPost = path.join(fixture, "blog-source/posts/new.gmi");
-  fs.unlinkSync(missingPost);
-  const missingSource = snapshotFiles(fixture);
-  const missing = runBuildCommand(fixture, flags);
-  assert.notEqual(missing.status, 0, "Missing source posts must stop the build");
+  const index = path.join(fixture, "bridge-index.txt");
+  fs.writeFileSync(index, "Invalid index without a title");
+  const invalidIndexSource = snapshotFiles(fixture);
+  const invalidIndex = runBuildCommand(fixture, flags);
+  assert.notEqual(invalidIndex.status, 0, "An invalid bridge index must stop the build");
   assert.deepEqual(snapshotFiles(destination), published);
-  assert.deepEqual(snapshotFiles(fixture), missingSource);
-  fs.writeFileSync(missingPost, postTexts.new);
+  assert.deepEqual(snapshotFiles(fixture), invalidIndexSource);
+  fs.writeFileSync(index, blog.index);
 
   const preload = path.join(fixture, "fail-fetch.cjs");
   fs.writeFileSync(preload, 'global.fetch = async () => { throw new Error("test network unavailable"); };\n');
@@ -371,6 +381,15 @@ test("the offline build writes only a complete clean dist and preserves it when 
   assert.match(failed.stderr, /Unknown page template value: unknownTemplateValue/);
   assert.deepEqual(snapshotFiles(destination), published, "a template error must preserve the current output");
   assert.deepEqual(snapshotFiles(fixture), invalidSource);
+});
+
+test("the local CLI build uses the Compose bridge for every article without copying its content", (t) => {
+  const fixture = createBuildFixture(t);
+  const result = runBuildCommand(fixture, ["--local"]);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const localBlog = { ...blog, bridgeBase: "http://127.0.0.1:5080/", capsuleIndex: "gemini://localhost/blog/" };
+  assert.deepEqual(snapshotFiles(path.join(fixture, "dist")), distributionSnapshot(localBlog));
+  assert.equal(fs.existsSync(path.join(fixture, "dist/blog-source")), false);
 });
 
 test("each page loads only its enhancements and one stylesheet", () => {
@@ -430,7 +449,7 @@ test("only post shells allow a connection to the blog bridge", () => {
     assert(policy, file);
     const directives = policyDirectives(policy.content);
     assert.deepEqual(directives["default-src"], ["'none'"]);
-    for (const name of ["script-src", "style-src", "img-src"]) {
+    for (const name of ["script-src", "style-src"]) {
       assert.deepEqual(directives[name], ["'self'"]);
     }
     for (const name of ["base-uri", "object-src", "form-action", "frame-src"]) {
@@ -438,6 +457,7 @@ test("only post shells allow a connection to the blog bridge", () => {
     }
     const connection = file.startsWith("blog/") && file !== "blog/index.html" ? new URL(blog.bridgeBase).origin : "'none'";
     assert.deepEqual(directives["connect-src"], [connection]);
+    assert.deepEqual(directives["img-src"], connection === "'none'" ? ["'self'"] : ["'self'", connection]);
     assert(!policy.content.includes("unsafe-inline") && !policy.content.includes("unsafe-eval"));
     assert(!policy.content.includes("127.0.0.1") && !policy.content.includes("localhost"));
     assert(html.indexOf('http-equiv="Content-Security-Policy"') < html.indexOf("<script"));

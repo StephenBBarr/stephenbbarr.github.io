@@ -30,6 +30,7 @@
       const article = renderer.render(text, {
         baseUrl: new URL(`posts/${post.dataset.postSlug}.gmi`, post.dataset.capsuleIndex).href,
         capsuleIndex: post.dataset.capsuleIndex,
+        imageBaseUrl: new URL("../images/", address).href,
         titleFallback: "",
       });
       const heading = article.querySelector("h1");

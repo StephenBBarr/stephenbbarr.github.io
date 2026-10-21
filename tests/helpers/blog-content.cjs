@@ -1,8 +1,5 @@
 "use strict";
 
-const fs = require("node:fs");
-const path = require("node:path");
-
 const settings = {
   enabled: true,
   bridgeBase: "https://bridge.example.test/",
@@ -39,14 +36,6 @@ const postTexts = {
 
 const disabledBlog = { ready: false, index: "", posts: [] };
 
-function writeBlogDirectory(directory, content = blog) {
-  fs.mkdirSync(path.join(directory, "posts"), { recursive: true });
-  fs.writeFileSync(path.join(directory, "index.gmi"), content.index);
-  for (const post of content.posts) {
-    fs.writeFileSync(path.join(directory, "posts", `${post.slug}.gmi`), postTexts[post.slug]);
-  }
-}
-
 function createFetcher(change = () => {}) {
   const calls = [];
   async function fetcher(url, options) {
@@ -68,4 +57,4 @@ function createFetcher(change = () => {}) {
   return { calls, fetcher };
 }
 
-module.exports = { blog, disabledBlog, settings, postTexts, writeBlogDirectory, createFetcher };
+module.exports = { blog, disabledBlog, settings, postTexts, createFetcher };
