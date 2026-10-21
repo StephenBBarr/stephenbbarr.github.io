@@ -18,6 +18,7 @@
     capsuleIndex,
     publishedSlugs,
     imageBaseUrl,
+    loadImage,
     titleFallback = "Blog post",
   } = {}) {
     const article = document.createElement("article");
@@ -78,7 +79,7 @@
         if (customLink) {
           article.append(customLink);
         } else {
-          appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl);
+          appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl, loadImage);
         }
         continue;
       }
@@ -150,7 +151,7 @@
     preformatted.setAttribute("aria-label", label || "Preformatted text");
   }
 
-  function appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl) {
+  function appendLink(article, line, baseUrl, capsuleIndex, publishedSlugs, imageBaseUrl, loadImage) {
     const parsedLink = parseLink(line, baseUrl || capsuleIndex);
     if (!parsedLink) {
       return appendBlock(article, "p", line, "gemtext-link");
@@ -164,10 +165,14 @@
       link.className = "blog-image-link";
       link.setAttribute("href", imageUrl);
       const image = article.ownerDocument.createElement("img");
-      image.setAttribute("src", imageUrl);
       image.setAttribute("alt", label);
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
+      if (loadImage) {
+        loadImage(image, imageUrl);
+      } else {
+        image.setAttribute("src", imageUrl);
+      }
       link.append(image);
       figure.append(link);
       appendBlock(figure, "figcaption", label);
