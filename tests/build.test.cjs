@@ -252,6 +252,7 @@ test("index titles stay escaped in post shells and metadata", () => {
   const { document } = parseHTML(generated.get("blog/new/index.html"));
   assert.equal(document.title, `${title} — Stephen Barr`);
   assert.equal(document.querySelector('meta[property="og:title"]').content, document.title);
+  assert.equal(document.querySelector('meta[name="twitter:title"]').content, document.title);
   assert.equal(document.querySelector("main h1").textContent, title);
   assert.equal(document.querySelector('script:not([src]), [onerror], img[src="x"]'), null);
   assert.equal(document.querySelector('link[rel="canonical"]').getAttribute("href"), `${content.siteOrigin}/blog/new/`);
@@ -296,6 +297,20 @@ test("publishing metadata identifies pages and keeps missing pages out of search
     const description = document.querySelector('meta[name="description"]').content;
     assert(description.length > 30);
     descriptions.add(description);
+    const imageUrl = new URL("/assets/focuson-crm-share.png", content.siteOrigin).href;
+    assert.equal(new URL(imageUrl).protocol, "https:");
+    assert.equal(document.querySelector('meta[property="og:title"]').content, document.title);
+    assert.equal(document.querySelector('meta[property="og:description"]').content, description);
+    assert.equal(document.querySelector('meta[property="og:image"]').content, imageUrl);
+    assert.equal(document.querySelector('meta[property="og:image:type"]').content, "image/png");
+    assert.equal(document.querySelector('meta[property="og:image:width"]').content, "1200");
+    assert.equal(document.querySelector('meta[property="og:image:height"]').content, "627");
+    assert.equal(document.querySelector('meta[property="og:image:alt"]').content, "FocusOn CRM");
+    assert.equal(document.querySelector('meta[name="twitter:card"]').content, "summary_large_image");
+    assert.equal(document.querySelector('meta[name="twitter:title"]').content, document.title);
+    assert.equal(document.querySelector('meta[name="twitter:description"]').content, description);
+    assert.equal(document.querySelector('meta[name="twitter:image"]').content, imageUrl);
+    assert.equal(document.querySelector('meta[name="twitter:image:alt"]').content, "FocusOn CRM");
     if (section === "not-found") {
       assert.equal(document.querySelector('meta[name="robots"]').content, "noindex");
       assert.equal(document.querySelector('link[rel="canonical"]'), null);
@@ -318,12 +333,16 @@ test("publishing metadata identifies pages and keeps missing pages out of search
 test("the distribution contains only generated public files and runtime assets", () => {
   const files = distributionFiles({ blog });
   assert.deepEqual([...files.keys()].sort(), [
-    ...buildFiles({ blog }).keys(), "favicon.svg", "styles/site.css", "assets/stephen-barr.jpg", "assets/Stephen-Barr-CV.pdf",
+    ...buildFiles({ blog }).keys(), "favicon.svg", "styles/site.css", "assets/stephen-barr.jpg", "assets/focuson-crm-share.png", "assets/Stephen-Barr-CV.pdf",
     ...["theme", "actions", "site", "gemtext", "blog"].map((name) => `scripts/${name}.js`),
   ].sort());
   for (const [, bytes] of files) {
     assert(typeof bytes === "string" || Buffer.isBuffer(bytes));
   }
+  const image = files.get("assets/focuson-crm-share.png");
+  assert.equal(image.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  assert.equal(image.readUInt32BE(16), 1200);
+  assert.equal(image.readUInt32BE(20), 627);
 });
 
 test("the bridge build writes only a complete clean dist and preserves it when loading or rendering fails", (t) => {
