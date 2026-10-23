@@ -156,7 +156,7 @@ test("each public section has a direct route, useful title, main landmark and or
   assert.deepEqual([...pages.keys()].sort(), routes.map(([file]) => file).sort());
   for (const [file, href, section, label] of routes) {
     const document = documentFor(file);
-    assert.equal(document.title, `${label} — Stephen Barr`);
+    assert.equal(document.title, `${label} | Stephen Barr`);
     assert.equal(document.querySelectorAll("main").length, 1);
     assert.equal(document.querySelectorAll("h1").length, 1);
     const heading = document.querySelector("h1");
@@ -227,7 +227,7 @@ test("the build provides a complete index and indexed post shells before visitor
   for (const post of blog.posts) {
     assert(main.querySelector(`a[href="/blog/${post.slug}/"]`));
     const document = documentFor(`blog/${post.slug}/index.html`);
-    assert.equal(document.title, `${post.title} — Stephen Barr`);
+    assert.equal(document.title, `${post.title} | Stephen Barr`);
     assert.equal(document.querySelector("#blog-body").textContent, "");
     assert(!document.querySelector("main").textContent.includes(postTexts[post.slug].split("\n")[1]));
     assert.equal(document.querySelectorAll("main article").length, 1);
@@ -250,7 +250,7 @@ test("index titles stay escaped in post shells and metadata", () => {
   snapshot.posts[0].title = title;
   const generated = buildPages({ blog: snapshot });
   const { document } = parseHTML(generated.get("blog/new/index.html"));
-  assert.equal(document.title, `${title} — Stephen Barr`);
+  assert.equal(document.title, `${title} | Stephen Barr`);
   assert.equal(document.querySelector('meta[property="og:title"]').content, document.title);
   assert.equal(document.querySelector('meta[name="twitter:title"]').content, document.title);
   assert.equal(document.querySelector("main h1").textContent, title);
