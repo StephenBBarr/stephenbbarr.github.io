@@ -116,7 +116,7 @@ function pageDefinitions(blog) {
         navigationSection: "blog",
         label: post.title,
         href: webAddress(post.slug),
-        description: `${post.title} — a blog post by Stephen Barr, published ${post.date}.`,
+        description: `${post.title}. A blog post by Stephen Barr, published ${post.date}.`,
         post,
       });
     }
@@ -140,7 +140,7 @@ function renderPages(definitions, blog) {
 }
 
 function renderDocument(template, page, blog) {
-  const title = `${page.label} — Stephen Barr`;
+  const title = `${page.label} | Stephen Barr`;
   const canonicalUrl = new URL(page.href, content.siteOrigin).href;
   let indexingMetadata = `<link rel="canonical" href="${escape(canonicalUrl)}">`;
   if (page.id === "not-found") {
